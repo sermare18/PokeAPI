@@ -6,7 +6,7 @@ const port = 3000;
 app.get('/', (req, res) => {
     // req es la request, la petición
     // res es la response, la respuesta
-    console.log(req);
+    // console.log(req);
     res.status(200).send('Hello World!');
 
 });
@@ -31,3 +31,6 @@ app.put('/team', () => {
 app.listen(port, () => {
     console.log('Server started at port 3000');
 });
+
+// Exportamos la varibale app, para que pueda ser utilizada por cualquier otro módulo externo (p.e, las plataformas de testing)
+exports.app = app;
