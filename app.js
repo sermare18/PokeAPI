@@ -11,24 +11,24 @@ app.get('/', (req, res) => {
 
 });
 
-app.post('/team/pokemons', () => {
+app.post('/team/pokemons', (req, res) => {
     res.status(200).send('Hello World!');
 });
 
-app.get('/team', () => {
+app.get('/team', (req, res) => {
     res.status(200).send('Hello World!');
 });
 
-app.delete('/team/pokemons/:pokeid', () => {
+app.delete('/team/pokemons/:pokeid', (req, res) => {
     res.status(200).send('Hello World!');
 });
 
-app.put('/team', () => {
+app.put('/team', (req, res) => {
     res.status(200).send('Hello World!');
 });
 
 // Empezamos a escuchar conexiones a nuestra API
-app.listen(port, () => {
+app.listen(port, (req, res) => {
     console.log('Server started at port 3000');
 });
 
