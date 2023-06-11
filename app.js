@@ -1,4 +1,9 @@
 const express = require('express');
+const passport = require('passport');
+
+// Esta línea de código importa el módulo llamado auth y lo ejecuta pasándole el objeto passport como argumento.
+require('./auth')(passport);
+
 // Definimos variable que gestionará las peticiones http
 const app = express();
 const port = 3000;
@@ -11,11 +16,25 @@ app.get('/', (req, res) => {
 
 });
 
+app.post('/login', (req, res) => {
+    // Comprobamos credenciales
+    // Si no son válidas, error
+    // Si son válidas, generamos un JWT y lo devolvemos
+    res.status(200).json(
+        {
+            // Token de prueba que contiene la clave secreta: secretPassword, un header con: ALGORITHM & TOKEN TYPE y un PAYLOAD:DATA con: el nombre del usuario
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.zX5MPQtbjoNAS7rpsx_hI7gqGIlXOQq758dIqyBVxxY'
+        }
+    );
+});
+
 app.post('/team/pokemons', (req, res) => {
     res.status(200).send('Hello World!');
 });
 
-app.get('/team', (req, res) => {
+// passport.authenticate es un middleware predefinido de passport
+// Podemos pasar tantos middlewares como queramos para cada ruta
+app.get('/team', passport.authenticate('jwt', {session: false}), (req, res, next) => {
     res.status(200).send('Hello World!');
 });
 

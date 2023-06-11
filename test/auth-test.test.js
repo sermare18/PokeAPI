@@ -26,17 +26,17 @@ describe('Suite de pruebas auth', () => {
             });
     });
     it('should return 200 when jwt token is valid', (done) => {
-        // set(): Para enviar el jwt en un header
+        // set('Authorization'): Para enviar el jwt en el header de autentificación
         chai.request(app)
             .post('/login')
             .end((err, res) => {
                 chai.request(app)
-                .get('/team')
-                .set('Authorization', `JWT ${res.body.token}`)
-                .end((err, res) => {
-                    chai.assert.equal(res.statusCode, 200);
-                    done();
-                });
+                    .get('/team')
+                    .set('Authorization', `JWT ${res.body.token}`)
+                    .end((err, res) => {
+                        chai.assert.equal(res.statusCode, 200);
+                        done();
+                    });
             });
     });
 });
