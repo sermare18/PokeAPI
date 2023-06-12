@@ -1,6 +1,7 @@
 // Importamos librería para crear identificadores únicos
 const uuid = require('uuid');
 const crypto = require('../crypto.js');
+const teams = require('./teams')
 
 const userDatabase = {};
 // userId -> password
@@ -24,16 +25,24 @@ const registerUser = (userName, password) => {
 const registerUser = (userName, password) => {
     let hashedPwd = crypto.hashPasswordSyn(password);
     // Guardar en la base de datos nuestro usuario
-    userDatabase[uuid.v4()] = {
+    let userId = uuid.v4();
+    userDatabase[userId] = {
         userName: userName,
         password: hashedPwd
     }
+    teams.bootstrapTeam(userId);
+}
+
+const getUser = (userId) => {
+    return userDatabase[userId];
 }
 
 const getUserIdFromUserName = (userName) => {
     for (let user in userDatabase) {
         if (userDatabase[user].userName == userName) {
-            return userDatabase[user];
+            let userData = userDatabase[user];
+            userData.userId = user;
+            return userData;
         }
     }
     // Si no existe el usuario en la db, devuelve undefined
@@ -104,3 +113,5 @@ function asyncFunction(callback) {
 
 exports.registerUser = registerUser;
 exports.checkUserCredentials = checkUserCredentials;
+exports.getUserIdFromUserName = getUserIdFromUserName;
+exports.getUser = getUser;
