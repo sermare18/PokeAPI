@@ -16,6 +16,11 @@ hashPassword('myPassword', (err, hash) => {
     }
 });
 */
+
+const hashPasswordSyn = (plainTextPwd) => {
+    return bcrypt.hashSync(plainTextPwd, 10);
+}
+
 const comparePassword = (plainPassword, hashPassword, done) => {
     bcrypt.compare(plainPassword, hashPassword, done);
 };
@@ -31,3 +36,7 @@ comparePassword('myPassword', hash, (err, result) => {
     }
 });
 */
+
+exports.hashPassword = hashPassword;
+exports.hashPasswordSyn = hashPasswordSyn;
+exports.comparePassword = comparePassword;

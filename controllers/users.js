@@ -1,6 +1,6 @@
 // Importamos librería para crear identificadores únicos
 const uuid = require('uuid');
-const crypto = require('./crypto.js');
+const crypto = require('../crypto.js');
 
 const userDatabase = {};
 // userId -> password
@@ -8,6 +8,7 @@ const userDatabase = {};
 // En la función registerUser, no es necesario pasar un tercer parámetro como callback porque la función no necesita devolver 
 // ningún resultado al llamador. La función registerUser simplemente guarda el usuario en la base de datos y no necesita informar 
 // al llamador si la operación fue exitosa o no.
+/*
 const registerUser = (userName, password) => {
     // Guardar en la base de datos nuestro usuario
     crypto.hashPassword(password, (err, result) => {
@@ -17,11 +18,39 @@ const registerUser = (userName, password) => {
         }
     });   
 };
+*/
 
-const checkUserCredentials = (userId, password, callback) => {
+// Forma síncrona (Para que los test no den errores)
+const registerUser = (userName, password) => {
+    let hashedPwd = crypto.hashPasswordSyn(password);
+    // Guardar en la base de datos nuestro usuario
+    userDatabase[uuid.v4()] = {
+        userName: userName,
+        password: hashedPwd
+    }
+}
+
+const getUserIdFromUserName = (userName) => {
+    for (let user in userDatabase) {
+        if (userDatabase[user].userName == userName) {
+            return userDatabase[user];
+        }
+    }
+    // Si no existe el usuario en la db, devuelve undefined
+}
+
+const checkUserCredentials = (userName, password, callback) => {
+    console.log('checking user credentials');
     // Comprobar que las credenciales son correctas
-    let user = userDatabase[userId];
-    crypto.comparePassword(password, user.hashPassword, callback);
+    let user = getUserIdFromUserName(userName);
+    if (user) {
+        console.log(user);
+        // user.password ya esta hasheada
+        crypto.comparePassword(password, user.password, callback);
+    } else {
+        // El argumento 'Missing user' se pasa como el primer parámetro de la función callback, que en este caso es el parámetro err. 
+        callback('Missing user');
+    }
 };
 
 // OTRA FORMA + EXPLICACIÓN CALLBACKS
@@ -72,3 +101,6 @@ function asyncFunction(callback) {
 */
 // Aunque checkUserCredentials no está definida como una función asíncrona, maneja correctamente la asincronía al pasar un 
 // callback a comparePassword, que a su vez pasa el callback a crypto.comparePassword, que es una función asíncrona.
+
+exports.registerUser = registerUser;
+exports.checkUserCredentials = checkUserCredentials;

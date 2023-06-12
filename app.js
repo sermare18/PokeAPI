@@ -1,13 +1,20 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+
 const usersController = require('./controllers/users.js');
+usersController.registerUser('sergio', '1234');
+usersController.registerUser('mastermind', '4321');
 
 // Esta línea de código importa el módulo llamado auth y lo ejecuta pasándole el objeto passport como argumento.
 require('./auth')(passport);
 
 // Definimos variable que gestionará las peticiones http
 const app = express();
+// Usamos 'bodyParser.json()' que es un plugin de express, que nos permite leer los datos de las peticiones a nuestro servidor de forma correcta transformando el texto plano original a formato json, p.e. para hacer esto: req.body.user
+app.use(bodyParser.json())
+
 const port = 3000;
 
 app.get('/', (req, res) => {
@@ -19,10 +26,16 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+    if (!req.body) {
+        return res.status(400).json({message: 'Missing data'});
+    }
+    else if (!req.body.user || !req.body.password) {
+        return res.status(400).json({message: 'Missing data'});
+    }
     // Comprobamos credenciales
     usersController.checkUserCredentials(req.body.user, req.body.password, (err, result) => {
         // Si no son válidas, error
-        if (!result) {
+        if (err || !result) {
             return res.status(401).json({message: 'Invalid credentials'});
         }
         // Si son válidas, generamos un JWT y lo devolvemos
@@ -30,7 +43,7 @@ app.post('/login', (req, res) => {
         const token = jwt.sign({userId: req.body.user}, secretKey)
         res.status(200).json(
             {
-                // Token de prueba que contiene la clave secreta: secretPassword, un header con: ALGORITHM & TOKEN TYPE y un PAYLOAD:DATA con: el nombre del usuario
+                // Token que contiene la clave secreta: secretPassword, un header con: ALGORITHM & TOKEN TYPE y un PAYLOAD:DATA con: el nombre del usuario
                 token: token
             }
         );
