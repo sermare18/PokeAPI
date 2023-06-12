@@ -1,4 +1,4 @@
-const teamsDatabase= {};
+const teamsDatabase = {};
 
 // Función para inicializar el equipo
 const bootstrapTeam = (userId) => {
@@ -9,8 +9,8 @@ const getTeamOfUser = (userId) => {
     return teamsDatabase[userId];
 }
 
-const addPokemon = (userId, pokemonName) => {
-    teamsDatabase[userId].push({name: pokemonName});
+const addPokemon = (userId, pokemon) => {
+    teamsDatabase[userId].push(pokemon);
 }
 
 const setTeam = (userId, team) => {
@@ -21,3 +21,4 @@ exports.bootstrapTeam = bootstrapTeam;
 exports.addPokemon = addPokemon;
 exports.setTeam = setTeam;
 exports.getTeamOfUser = getTeamOfUser;
+
