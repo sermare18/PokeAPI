@@ -55,9 +55,12 @@ router.route('/pokemons')
         });
 
 router.route('/pokemons/:pokeid')
-    .delete(() => {
-        res.status(200).send('Hello World!');
-    });
+    .delete(passport.authenticate('jwt', { session:false }),
+        (req, res) => {
+            // Para leer parámetros del endponit tenemos que utilizar req.params.pokeid
+            let deletedPokemon = teamsController.deletePokemon(req.user.userId, req.params.pokeid);
+            res.status(200).json({deletedPokemon: deletedPokemon});
+        });
 
 exports.router = router;
 

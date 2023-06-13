@@ -56,8 +56,8 @@ describe('Suite de pruebas teams', () => {
     });
 
     it('should return the pokedex number using PokeAPI', (done) => {
-        let pokemonName = 'Bulbasaur';
         // .send({user: 'mastermind', password: '4321') enviamos en el body de la request, un objeto que contiene el nombre de usuario y la contraseña
+        let pokemonName = 'Bulbasaur';
         chai.request(app)
             .post('/auth/login')
             .set('content-type', 'application/json')
@@ -83,6 +83,43 @@ describe('Suite de pruebas teams', () => {
                                 chai.assert.equal(res.body.team[0].pokedexNumber, 1);
                                 done();
                             });
+                    });
+            });
+    });
+
+    it('should delete a given Pokémon for an authenticated user', (done) => {
+        let pokemonId = '0';
+        let team = [{name: 'Charizard'}, {name: 'Blastoise'}, {name: 'Pikachu'}];
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({user: 'mastermind', password: '4321'})
+            .end((err, res) => {
+                let token = res.body.token;
+                chai.assert.equal(res.statusCode, 200);
+                chai.request(app)
+                    .put('/teams')
+                    .send({team: team})
+                    .set('Authorization', `JWT ${token}`)
+                    .end((err, res) => {
+                        chai.request(app)
+                            .delete(`/teams/pokemons/${pokemonId}`)
+                            .set('Authorization', `JWT ${token}`)
+                            .end((err, res) => {
+                                // tiene equipo con Charizard y Blastoise
+                                // { trainer: 'mastermind', team: [Pokemon]}
+                                chai.assert.equal(res.statusCode, 200);
+                                chai.assert.equal(res.body.deletedPokemon.name, team[pokemonId].name);
+                            });
+                            chai.request(app)
+                                .get('/teams')
+                                .set('Authorization', `JWT ${token}`)
+                                .end((err, res) => {
+                                    chai.assert.equal(res.body.trainer, 'mastermind');
+                                    team.splice(pokemonId, 1);
+                                    chai.assert.deepEqual(res.body.team, team);
+                                    done();
+                                })
                     });
             });
     });
