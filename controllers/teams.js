@@ -1,4 +1,10 @@
-const teamsDatabase = {};
+let teamsDatabase = {};
+
+const cleanUpTeam = () => {
+    for (let user in teamsDatabase) {
+        teamsDatabase[user] = [];
+    }
+}
 
 // Función para inicializar el equipo
 const bootstrapTeam = (userId) => {
@@ -21,4 +27,5 @@ exports.bootstrapTeam = bootstrapTeam;
 exports.addPokemon = addPokemon;
 exports.setTeam = setTeam;
 exports.getTeamOfUser = getTeamOfUser;
+exports.cleanUpTeam = cleanUpTeam;
 

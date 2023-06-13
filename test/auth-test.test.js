@@ -1,5 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const { before } = require('mocha');
+const usersController = require('../controllers/users');
 
 chai.use(chaiHttp);
 
@@ -14,6 +16,14 @@ const app = require('../app').app;
 // El encabezado contiene información sobre cómo se ha generado el token y qué algoritmo se ha utilizado para firmarlo. 
 // El payload contiene los datos que se transmiten, como la información del usuario y los privilegios. 
 // La firma se utiliza para verificar que el token no haya sido modificado durante la transmisión.
+
+// La función before ejecuta un bloque de código antes de todas las pruebas en una suite de pruebas. 
+// Si las funciones incluidas dentro del bloque before son asíncronas es necesario pasar como argummento el callback done
+before((done) => {
+    usersController.registerUser('sergio', '1234');
+    usersController.registerUser('mastermind', '4321');
+    done();
+});
 
 describe('Suite de pruebas auth', () => {
     it('should return 401 when no jwt token available', (done) => {
@@ -68,4 +78,9 @@ describe('Suite de pruebas auth', () => {
                     });
             });
     });
+});
+
+after((done) => {
+    usersController.cleanUpUsers();
+    done();
 });

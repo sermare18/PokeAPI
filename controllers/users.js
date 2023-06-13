@@ -3,8 +3,12 @@ const uuid = require('uuid');
 const crypto = require('../crypto.js');
 const teams = require('./teams')
 
-const userDatabase = {};
+let userDatabase = {};
 // userId -> password
+
+const cleanUpUsers = () => {
+    userDatabase = {};
+}
 
 // En la función registerUser, no es necesario pasar un tercer parámetro como callback porque la función no necesita devolver 
 // ningún resultado al llamador. La función registerUser simplemente guarda el usuario en la base de datos y no necesita informar 
@@ -115,3 +119,4 @@ exports.registerUser = registerUser;
 exports.checkUserCredentials = checkUserCredentials;
 exports.getUserIdFromUserName = getUserIdFromUserName;
 exports.getUser = getUser;
+exports.cleanUpUsers = cleanUpUsers;
