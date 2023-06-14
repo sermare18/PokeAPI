@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const middlewares = require('./middlewares');
 
 // Routes
 const authRoutes = require('./auth/auth.router').router;
@@ -7,10 +7,10 @@ const teamsRoutes = require('./teams/teams.router').router;
 
 // Definimos variable que gestionará las peticiones http
 const app = express();
-// Usamos 'bodyParser.json()' que es un plugin de express, que nos permite leer los datos de las peticiones a nuestro servidor de forma correcta transformando el texto plano original a formato json, p.e. para hacer esto: req.body.user
-app.use(bodyParser.json())
-
 const port = 3000;
+
+// Establecemos desde aquí todos los middlewares de todas las rutas, para no repetir código en los archivos .router.js
+middlewares.setupMiddlewares(app);
 
 app.get('/', (req, res) => {
     // req es la request, la petición
