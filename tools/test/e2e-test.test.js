@@ -6,7 +6,7 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 
 // Acceso a nuestro backend
-const app = require('../app').app;
+const app = require('../../app').app;
 
 // Suite de tests para funcionalidades relacionadas
 describe('Suite de prueba e2e para el curso', () => {

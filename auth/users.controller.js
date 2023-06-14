@@ -1,7 +1,7 @@
 // Importamos librería para crear identificadores únicos
 const uuid = require('uuid');
-const crypto = require('../crypto.js');
-const teams = require('./teams')
+const crypto = require('../tools/crypto.js');
+const teams = require('../teams/teams.controller.js')
 
 let userDatabase = {};
 // userId -> password

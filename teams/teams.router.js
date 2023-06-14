@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 // Esta línea de código importa el módulo llamado auth y lo ejecuta pasándole el objeto passport como argumento
-require('../auth')(passport);
+require('../tools/auth')(passport);
 const axios = require('axios');
 
 // Controllers
-const teamsController = require('../controllers/teams');
-const { getUser } = require('../controllers/users');
+const teamsController = require('./teams.controller');
+const { getUser } = require('../auth/users.controller');
 
 router.route('/')
     .get(passport.authenticate('jwt', { session: false }),
