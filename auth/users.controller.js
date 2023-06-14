@@ -7,7 +7,10 @@ let userDatabase = {};
 // userId -> password
 
 const cleanUpUsers = () => {
-    userDatabase = {};
+    return new Promise((resolve, reject) => {
+        userDatabase = {};
+        resolve();
+    });
 }
 
 // En la función registerUser, no es necesario pasar un tercer parámetro como callback porque la función no necesita devolver 
@@ -27,43 +30,59 @@ const registerUser = (userName, password) => {
 
 // Forma síncrona (Para que los test no den errores)
 const registerUser = (userName, password) => {
-    let hashedPwd = crypto.hashPasswordSyn(password);
-    // Guardar en la base de datos nuestro usuario
-    let userId = uuid.v4();
-    userDatabase[userId] = {
-        userName: userName,
-        password: hashedPwd
-    }
-    teams.bootstrapTeam(userId);
+    return new Promise(async (resolve, reject) => {
+        let hashedPwd = crypto.hashPasswordSyn(password);
+        // Guardar en la base de datos nuestro usuario
+        let userId = uuid.v4();
+        userDatabase[userId] = {
+            userName: userName,
+            password: hashedPwd
+        }
+        await teams.bootstrapTeam(userId);
+        resolve();
+    });
 }
 
 const getUser = (userId) => {
-    return userDatabase[userId];
+    return new Promise((resolve, reject) => {
+        resolve(userDatabase[userId]);
+    });
 }
 
 const getUserIdFromUserName = (userName) => {
-    for (let user in userDatabase) {
-        if (userDatabase[user].userName == userName) {
-            let userData = userDatabase[user];
-            userData.userId = user;
-            return userData;
+    return new Promise((resolve, reject) => {
+        for (let user in userDatabase) {
+            if (userDatabase[user].userName == userName) {
+                let userData = userDatabase[user];
+                userData.userId = user;
+                return resolve(userData);
+            }
         }
-    }
-    // Si no existe el usuario en la db, devuelve undefined
+        // Si no existe el usuario en la db
+        reject('No user found');
+    })
 }
 
-const checkUserCredentials = (userName, password, callback) => {
-    console.log('checking user credentials');
-    // Comprobar que las credenciales son correctas
-    let user = getUserIdFromUserName(userName);
-    if (user) {
-        console.log(user);
-        // user.password ya esta hasheada
-        crypto.comparePassword(password, user.password, callback);
-    } else {
-        // El argumento 'Missing user' se pasa como el primer parámetro de la función callback, que en este caso es el parámetro err. 
-        callback('Missing user');
-    }
+const checkUserCredentials = (userName, password) => {
+    return new Promise(async (resolve, reject) => {
+        console.log('checking user credentials');
+        // Comprobar que las credenciales son correctas
+        let user = await getUserIdFromUserName(userName);
+        if (user) {
+            console.log(user);
+            // user.password ya esta hasheada
+            crypto.comparePassword(password, user.password, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        } else {
+            // El argumento 'Missing user' se pasa como el primer parámetro de la función callback, que en este caso es el parámetro err. 
+            reject('Missing user');
+        }
+    });
 };
 
 // OTRA FORMA + EXPLICACIÓN CALLBACKS

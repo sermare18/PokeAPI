@@ -12,7 +12,10 @@ const cleanUpTeam = () => {
 
 // Función para inicializar el equipo
 const bootstrapTeam = (userId) => {
-    teamsDatabase[userId] = [];
+    return new Promise((resolve, reject) => {
+        teamsDatabase[userId] = [];
+        resolve();
+    });
 }
 
 const getTeamOfUser = (userId) => {
@@ -26,7 +29,7 @@ const addPokemon = (userId, pokemon) => {
     return new Promise((resolve, reject) => {
         if (teamsDatabase[userId].length == 6) {
             // Devolvemos error, nuestro equipo pokemon solo puede tener 6 pokémons, la promesa va a fallar
-            reject();
+            reject('Already have 6 pokemon');
         } else {
             teamsDatabase[userId].push(pokemon);
             resolve();
@@ -35,15 +38,21 @@ const addPokemon = (userId, pokemon) => {
 }
 
 const deletePokemon = (userId, pokemonId) => {
-    console.log('DELETE', userId, pokemonId);
-    if (teamsDatabase[userId][pokemonId]) {
-        const deletedPokemon = teamsDatabase[userId].splice(pokemonId, 1)[0];
-        return deletedPokemon;
-    }
+    return new Promise((resolve, reject) => {
+        console.log('DELETE', userId, pokemonId);
+        if (teamsDatabase[userId][pokemonId]) {
+            const deletedPokemon = teamsDatabase[userId].splice(pokemonId, 1)[0];
+            return deletedPokemon;
+        }
+        resolve();
+    });
 }
 
 const setTeam = (userId, team) => {
-    teamsDatabase[userId] = team;
+    return new Promise((resolve, reject) => {
+        teamsDatabase[userId] = team;
+        resolve();
+    });
 }
 
 exports.bootstrapTeam = bootstrapTeam;
