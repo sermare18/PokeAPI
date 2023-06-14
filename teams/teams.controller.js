@@ -42,9 +42,9 @@ const deletePokemon = (userId, pokemonId) => {
         console.log('DELETE', userId, pokemonId);
         if (teamsDatabase[userId][pokemonId]) {
             const deletedPokemon = teamsDatabase[userId].splice(pokemonId, 1)[0];
-            return deletedPokemon;
+            return resolve(deletedPokemon);
         }
-        resolve();
+        reject('Índice de pokémon fuera de rango');
     });
 }
 

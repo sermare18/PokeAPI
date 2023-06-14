@@ -43,6 +43,8 @@ const registerUser = (userName, password) => {
     });
 }
 
+registerUser('mastermind', '4321');
+
 const getUser = (userId) => {
     return new Promise((resolve, reject) => {
         resolve(userDatabase[userId]);
