@@ -15,19 +15,28 @@ before((done) => {
 });
 
 // Se ejecuta después de cada it dentro de una suite de pruebas
-afterEach((done) => {
-    teamsController.cleanUpTeam();
-    done();
+afterEach(async () => {
+    // PRIMERA OPCIÓN
+    // Hay que utilizar .then() ya que hemos definido la función 'cleanUpTeam' con promesas
+    // Con .then() indicamos a la función cuando ha acabado de ejecutarse la función 'cleanUpTeam' para que ejecute la siguiente línea de código
+    // teamsController.cleanUpTeam().then(() => {
+    //     console.log("Limpieza de equipos completada");
+    //     done();
+    // });
+    // SEGUNDA OPCIÓN
+    // Poner la palabara reservada 'await' delante de la promesa
+    // Esta opción nos obliga a definir esta función anónima con la palabra reservada 'async' y quitar el parámetro done
+    await teamsController.cleanUpTeam();
 });
 
 describe('Suite de pruebas teams', () => {
     it('should return the team of the given user', (done) => {
-        let team = [{name: 'Charizard'}, {name: 'Blastoise'}, {name: 'Pikachu'}];
+        let team = [{ name: 'Charizard' }, { name: 'Blastoise' }, { name: 'Pikachu' }];
         // .send({user: 'mastermind', password: '4321') enviamos en el body de la request, un objeto que contiene el nombre de usuario y la contraseña
         chai.request(app)
             .post('/auth/login')
             .set('content-type', 'application/json')
-            .send({user: 'mastermind', password: '4321'})
+            .send({ user: 'mastermind', password: '4321' })
             .end((err, res) => {
                 let token = res.body.token;
                 chai.assert.equal(res.statusCode, 200);
@@ -61,13 +70,13 @@ describe('Suite de pruebas teams', () => {
         chai.request(app)
             .post('/auth/login')
             .set('content-type', 'application/json')
-            .send({user: 'mastermind', password: '4321'})
+            .send({ user: 'mastermind', password: '4321' })
             .end((err, res) => {
                 let token = res.body.token;
                 chai.assert.equal(res.statusCode, 200);
                 chai.request(app)
                     .post('/teams/pokemons')
-                    .send({name: pokemonName})
+                    .send({ name: pokemonName })
                     .set('Authorization', `JWT ${token}`)
                     .end((err, res) => {
                         chai.request(app)
@@ -89,17 +98,17 @@ describe('Suite de pruebas teams', () => {
 
     it('should delete a given Pokémon for an authenticated user', (done) => {
         let pokemonId = '0';
-        let team = [{name: 'Charizard'}, {name: 'Blastoise'}, {name: 'Pikachu'}];
+        let team = [{ name: 'Charizard' }, { name: 'Blastoise' }, { name: 'Pikachu' }];
         chai.request(app)
             .post('/auth/login')
             .set('content-type', 'application/json')
-            .send({user: 'mastermind', password: '4321'})
+            .send({ user: 'mastermind', password: '4321' })
             .end((err, res) => {
                 let token = res.body.token;
                 chai.assert.equal(res.statusCode, 200);
                 chai.request(app)
                     .put('/teams')
-                    .send({team: team})
+                    .send({ team: team })
                     .set('Authorization', `JWT ${token}`)
                     .end((err, res) => {
                         chai.request(app)
@@ -111,15 +120,49 @@ describe('Suite de pruebas teams', () => {
                                 chai.assert.equal(res.statusCode, 200);
                                 chai.assert.equal(res.body.deletedPokemon.name, team[pokemonId].name);
                             });
-                            chai.request(app)
-                                .get('/teams')
-                                .set('Authorization', `JWT ${token}`)
-                                .end((err, res) => {
-                                    chai.assert.equal(res.body.trainer, 'mastermind');
-                                    team.splice(pokemonId, 1);
-                                    chai.assert.deepEqual(res.body.team, team);
-                                    done();
-                                })
+                        chai.request(app)
+                            .get('/teams')
+                            .set('Authorization', `JWT ${token}`)
+                            .end((err, res) => {
+                                chai.assert.equal(res.body.trainer, 'mastermind');
+                                team.splice(pokemonId, 1);
+                                chai.assert.deepEqual(res.body.team, team);
+                                done();
+                            })
+                    });
+            });
+    });
+
+    it('should not be able to add pokemon if you already have 6', (done) => {
+        let pokemonName = 'Gyarados';
+        let team = [
+            { name: 'Charizard' },
+            { name: 'Blastoise' }, 
+            { name: 'Pikachu' },
+            { name: 'Lucario' },
+            { name: 'Azumarill' },
+            { name: 'Gengar' },
+        ];
+        chai.request(app)
+            .post('/auth/login')
+            .set('content-type', 'application/json')
+            .send({ user: 'mastermind', password: '4321' })
+            .end((err, res) => {
+                let token = res.body.token;
+                chai.assert.equal(res.statusCode, 200);
+                chai.request(app)
+                    .put('/teams')
+                    .send({ team: team })
+                    .set('Authorization', `JWT ${token}`)
+                    .end((err, res) => {
+                        chai.request(app)
+                            .post('/teams/pokemons')
+                            .send({name: pokemonName})
+                            .set('Authorization', `JWT ${token}`)
+                            .end((err, res) => {
+                                chai.assert.equal(res.statusCode, 400);
+                                done();
+                            })
                     });
             });
     });

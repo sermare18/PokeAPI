@@ -1,9 +1,13 @@
 let teamsDatabase = {};
 
 const cleanUpTeam = () => {
-    for (let user in teamsDatabase) {
-        teamsDatabase[user] = [];
-    }
+    return new Promise((resolve, reject) => {
+        for (let user in teamsDatabase) {
+            teamsDatabase[user] = [];
+        }
+        // Informamos de que hemos terminado nuestra promesa
+        resolve();
+    });
 }
 
 // Función para inicializar el equipo
@@ -12,11 +16,22 @@ const bootstrapTeam = (userId) => {
 }
 
 const getTeamOfUser = (userId) => {
-    return teamsDatabase[userId];
+    return new Promise((resolve, reject) => {
+        // Para devolver objetos con resolve
+        resolve(teamsDatabase[userId]);
+    });
 }
 
 const addPokemon = (userId, pokemon) => {
-    teamsDatabase[userId].push(pokemon);
+    return new Promise((resolve, reject) => {
+        if (teamsDatabase[userId].length == 6) {
+            // Devolvemos error, nuestro equipo pokemon solo puede tener 6 pokémons, la promesa va a fallar
+            reject();
+        } else {
+            teamsDatabase[userId].push(pokemon);
+            resolve();
+        }
+    });
 }
 
 const deletePokemon = (userId, pokemonId) => {
