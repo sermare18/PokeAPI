@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// He eliminado la contraseña por seguridad
 let password = '';
 let databaseName = 'db';
 
@@ -11,7 +12,7 @@ if (process.env.NODE_ENV === 'test') {
     databaseName = 'testdb';
 }
 
-// Dentro de ``va la uri de conexión a nuestra base de datos MongoDB
+// Dentro de ` ` va la uri de conexión a nuestra base de datos MongoDB
 mongoose.connect(`mongodb+srv://sergio:${password}@cluster0.dejksbe.mongodb.net/${databaseName}?retryWrites=true&w=majority`);
 
 // Ejemplo
