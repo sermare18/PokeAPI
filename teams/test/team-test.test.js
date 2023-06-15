@@ -8,10 +8,9 @@ chai.use(chaiHttp);
 
 const app = require('../../app').app;
 
-before((done) => {
-    usersController.registerUser('sergio', '1234');
-    usersController.registerUser('mastermind', '4321');
-    done();
+beforeEach(async () => {
+    await usersController.registerUser('sergio', '1234');
+    await usersController.registerUser('mastermind', '4321');
 });
 
 // Se ejecuta después de cada it dentro de una suite de pruebas
@@ -27,6 +26,7 @@ afterEach(async () => {
     // Poner la palabara reservada 'await' delante de la promesa
     // Esta opción nos obliga a definir esta función anónima con la palabra reservada 'async' y quitar el parámetro done
     await teamsController.cleanUpTeam();
+    await usersController.cleanUpUsers();
 });
 
 describe('Suite de pruebas teams', () => {
@@ -98,7 +98,8 @@ describe('Suite de pruebas teams', () => {
 
     it('should delete a given Pokémon for an authenticated user', (done) => {
         let pokemonId = '0';
-        let team = [{ name: 'Charizard' }, { name: 'Blastoise' }, { name: 'Pikachu' }];
+        let teamOriginal = [{ name: 'Charizard' }, { name: 'Blastoise' }, { name: 'Pikachu' }];
+        let teamCopy = [...teamOriginal];
         chai.request(app)
             .post('/auth/login')
             .set('content-type', 'application/json')
@@ -108,7 +109,7 @@ describe('Suite de pruebas teams', () => {
                 chai.assert.equal(res.statusCode, 200);
                 chai.request(app)
                     .put('/teams')
-                    .send({ team: team })
+                    .send({ team: teamOriginal })
                     .set('Authorization', `JWT ${token}`)
                     .end((err, res) => {
                         chai.request(app)
@@ -118,17 +119,17 @@ describe('Suite de pruebas teams', () => {
                                 // tiene equipo con Charizard y Blastoise
                                 // { trainer: 'mastermind', team: [Pokemon]}
                                 chai.assert.equal(res.statusCode, 200);
-                                chai.assert.equal(res.body.deletedPokemon.name, team[pokemonId].name);
+                                chai.assert.equal(res.body.deletedPokemon.name, teamCopy[pokemonId].name);
+                                chai.request(app)
+                                    .get('/teams')
+                                    .set('Authorization', `JWT ${token}`)
+                                    .end((err, res) => {
+                                        chai.assert.equal(res.body.trainer, 'mastermind');
+                                        teamOriginal.splice(pokemonId, 1);
+                                        chai.assert.deepEqual(res.body.team, teamOriginal);
+                                        done();
+                                    })
                             });
-                        chai.request(app)
-                            .get('/teams')
-                            .set('Authorization', `JWT ${token}`)
-                            .end((err, res) => {
-                                chai.assert.equal(res.body.trainer, 'mastermind');
-                                team.splice(pokemonId, 1);
-                                chai.assert.deepEqual(res.body.team, team);
-                                done();
-                            })
                     });
             });
     });
@@ -137,7 +138,7 @@ describe('Suite de pruebas teams', () => {
         let pokemonName = 'Gyarados';
         let team = [
             { name: 'Charizard' },
-            { name: 'Blastoise' }, 
+            { name: 'Blastoise' },
             { name: 'Pikachu' },
             { name: 'Lucario' },
             { name: 'Azumarill' },
@@ -157,7 +158,7 @@ describe('Suite de pruebas teams', () => {
                     .end((err, res) => {
                         chai.request(app)
                             .post('/teams/pokemons')
-                            .send({name: pokemonName})
+                            .send({ name: pokemonName })
                             .set('Authorization', `JWT ${token}`)
                             .end((err, res) => {
                                 chai.assert.equal(res.statusCode, 400);

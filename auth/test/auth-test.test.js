@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { before } = require('mocha');
 const usersController = require('../users.controller');
+const teamsController = require('../../teams/teams.controller');
 
 chai.use(chaiHttp);
 
@@ -19,10 +20,14 @@ const app = require('../../app').app;
 
 // La función before ejecuta un bloque de código antes de todas las pruebas en una suite de pruebas. 
 // Si las funciones incluidas dentro del bloque before son asíncronas es necesario pasar como argummento el callback done
-before((done) => {
-    usersController.registerUser('sergio', '1234');
-    usersController.registerUser('mastermind', '4321');
-    done();
+beforeEach(async () => {
+    await usersController.registerUser('sergio', '1234');
+    await usersController.registerUser('mastermind', '4321');
+});
+
+afterEach(async () => {
+    await teamsController.cleanUpTeam();
+    await usersController.cleanUpUsers();
 });
 
 describe('Suite de pruebas auth', () => {

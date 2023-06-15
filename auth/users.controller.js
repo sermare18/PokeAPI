@@ -1,14 +1,28 @@
 // Importamos librería para crear identificadores únicos
 const uuid = require('uuid');
 const crypto = require('../tools/crypto.js');
-const teams = require('../teams/teams.controller.js')
+const teams = require('../teams/teams.controller.js');
+const mongoose = require('mongoose');
+const { to } = require('../tools/to');
 
-let userDatabase = {};
+// Definimos el modelo de usuario para MongoDB
+const UserModel = mongoose.model('UserModel', {
+    userName: String,
+    password: String,
+    userId: String
+});
+
+// let userDatabase = {}; // Antigua DB Local
 // userId -> password
 
 const cleanUpUsers = () => {
-    return new Promise((resolve, reject) => {
-        userDatabase = {};
+    return new Promise(async (resolve, reject) => {
+        // userDatabase = {};
+        // resolve();
+
+        // Con MongoDB
+        // Queremos eliminar todo, por lo tanto, enviamos una query vacía: {}
+        await UserModel.deleteMany({}).exec();
         resolve();
     });
 }
@@ -32,37 +46,56 @@ const registerUser = (userName, password) => {
 const registerUser = (userName, password) => {
     return new Promise(async (resolve, reject) => {
         let hashedPwd = crypto.hashPasswordSyn(password);
-        // Guardar en la base de datos nuestro usuario
         let userId = uuid.v4();
-        userDatabase[userId] = {
+        // Guardar en la base de datos local (NO PERSISTENTE) nuestro usuario
+        // userDatabase[userId] = {
+        //     userName: userName,
+        //     password: hashedPwd
+        // }
+        // Guardar en la base de datos remota (PERSISTENTE) MongoDB
+        let newUser = new UserModel({
             userName: userName,
-            password: hashedPwd
-        }
+            password: hashedPwd,
+            userId: userId
+        });
+        // MongoDB trabaja con promesas para las operaciones de lectura y escritura en la DB
+        await newUser.save();
         await teams.bootstrapTeam(userId);
         resolve();
     });
 }
 
-registerUser('mastermind', '4321');
-
 const getUser = (userId) => {
-    return new Promise((resolve, reject) => {
-        resolve(userDatabase[userId]);
+    return new Promise(async (resolve, reject) => {
+        // resolve(userDatabase[userId]);
+        // Query con MongoDB, las query son objetos json
+        let [err, result] = await to(UserModel.findOne({userId: userId}).exec());
+        if (err) {
+            return reject(err);
+        }
+        resolve(result);
     });
 }
 
 const getUserIdFromUserName = (userName) => {
-    return new Promise((resolve, reject) => {
-        for (let user in userDatabase) {
-            if (userDatabase[user].userName == userName) {
-                let userData = userDatabase[user];
-                userData.userId = user;
-                return resolve(userData);
-            }
+    return new Promise(async (resolve, reject) => {
+        // for (let user in userDatabase) {
+        //     if (userDatabase[user].userName == userName) {
+        //         let userData = userDatabase[user];
+        //         userData.userId = user;
+        //         return resolve(userData);
+        //     }
+        // }
+        // // Si no existe el usuario en la db
+        // reject('No user found');
+        
+        // Con MongoDB
+        let [err, result] = await to(UserModel.findOne({userName: userName}).exec());
+        if (err) {
+            return reject(err);
         }
-        // Si no existe el usuario en la db
-        reject('No user found');
-    })
+        resolve(result);
+    });
 }
 
 const checkUserCredentials = (userName, password) => {
